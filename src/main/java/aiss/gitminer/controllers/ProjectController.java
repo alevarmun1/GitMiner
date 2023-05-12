@@ -1,39 +1,46 @@
 package aiss.gitminer.controllers;
 
+import aiss.gitminer.model.Comment;
+import aiss.gitminer.model.Commit;
+import aiss.gitminer.model.Issue;
 import aiss.gitminer.model.Project;
+import aiss.gitminer.repositories.CommentRepository;
+import aiss.gitminer.repositories.CommitRepository;
+import aiss.gitminer.repositories.IssueRepository;
 import aiss.gitminer.repositories.ProjectRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectRepository repository;
+    private final ProjectRepository projectRepository;
+    private final IssueRepository issueRepository;
+    private final CommentRepository commentRepository;
+    private final CommitRepository commitRepository;
 
-    public ProjectController(ProjectRepository repository) {
-        this.repository = repository;
+    public ProjectController(ProjectRepository projectRepository, IssueRepository issueRepository, CommentRepository commentRepository, CommitRepository commitRepository)
+    {
+        this.projectRepository = projectRepository;
+        this.commentRepository = commentRepository;
+        this.commitRepository = commitRepository;
+        this.issueRepository = issueRepository;
     }
 
-    // GET http:///localhost:8080/api/projects
-    @GetMapping
-    public List<Project> findAll(){
-        return repository.findAll();
+    @PostMapping("/{user}/{repo}")
+    public Project fetchAllData(@PathVariable String user, @PathVariable String repo)
+    {
+        Project project = projectRepository.fetchGitLab(user,repo);
+        Commit[] commits = commitRepository.fetchGitLab(user,repo);
+        Issue[] issues = issueRepository.fetchGitLab(user,repo);
+        for(Issue i: issues){
+            Comment[] comments = commentRepository.fetchGitLab(user, repo, i.getRefId());
+            i.setComments(comments);
+        }
+        project.setCommits(commits);
+        project.setIssues(issues);
+        projectRepository.postGitMiner(project);
+        return project;
     }
-
-    // GET http://localhost:8080/api/projects/{id}
-    @GetMapping("/{id}")
-    public Project findOne(@PathVariable String id){
-        return repository.findOne(id);
-    }
-
-    // POST http://localhost:8080/api/projects
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public Project create(@Valid @RequestBody Project project) { return repository.create(project); }
-
 
 }

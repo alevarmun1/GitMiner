@@ -1,52 +1,22 @@
 package aiss.gitminer.repositories;
-
-import aiss.gitminer.model.Comment;
 import aiss.gitminer.model.Issue;
+import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import org.springframework.web.client.RestTemplate;
 
 @Repository
 public class IssueRepository {
-
-    List<Issue> issues = new ArrayList<>();
-
-    public IssueRepository(){
-
+    public final String API_TOKEN = "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";
+    public final String API_URL = "https://api.github.com/repos/";
+    public Issue[] fetchGitLab(String user, String repo) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + API_TOKEN);
+        String url = API_URL + user + "/" + repo + "/issues";
+        HttpEntity<String> entity = new HttpEntity<String>(url,headers);
+        ResponseEntity<Issue[]> issues = restTemplate.exchange(url, HttpMethod.GET, entity, Issue[].class);
+        return issues.getBody();
     }
 
-    public List<Issue> findAll(){ return issues; }
-
-    public Issue findOne(String id){
-        return issues.stream()
-                .filter(issue -> issue.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public List<Issue> findAllIssuesByAuthorId(String authorId){
-        return issues.stream()
-                .filter(issue -> issue.getAuthor().getId().equals(authorId))
-                .collect(Collectors.toList());
-    }
-
-    public List<Issue> findAllIssuesByState(String state){
-        return issues.stream()
-                .filter(issue -> issue.getState().equals(state))
-                .collect(Collectors.toList());
-    }
-
-    public List<Comment> getIssuesComments (String issueId){
-        return issues.stream()
-                .filter(issue -> issue.getId().equals(issueId))
-                .findFirst()
-                .map(Issue::getComments)
-                .orElse(Collections.emptyList());
-
-
-    }
 }

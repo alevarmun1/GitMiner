@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>aiss.gitminer</groupId>
-	<artifactId>gitminer</artifactId>
+	<artifactId>GitHubMiner</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>GitMiner</name>
 	<description>Demo project for Spring Boot</description>
