@@ -1,12 +1,16 @@
 package aiss.gitminer.repositories;
 
 import aiss.gitminer.model.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.data.domain.Pageable;
+
 @Repository
-public class ProjectRepository {
+public interface ProjectRepository extends JpaRepository<Project, Long> {
     public final String API_TOKEN = "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";
     public final String API_URL = "https://api.github.com/repos/";
     public final String API_POST_URL = "http://localhost:8080/gitminer/projects";
@@ -26,4 +30,8 @@ public class ProjectRepository {
         String url = API_POST_URL;
         restTemplate.postForObject(url, project, Project.class);
     }
+
+    Page<Project> findById(String id, Pageable pageable);
+
+
 }

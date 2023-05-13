@@ -17,15 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/projects")
-public class ProjectController {
+@RequestMapping("/api/issues")
+public class IssueController {
 
     private final ProjectRepository projectRepository;
     private final IssueRepository issueRepository;
     private final CommentRepository commentRepository;
     private final CommitRepository commitRepository;
 
-    public ProjectController(ProjectRepository projectRepository, IssueRepository issueRepository, CommentRepository commentRepository, CommitRepository commitRepository)
+    public IssueController(ProjectRepository projectRepository, IssueRepository issueRepository, CommentRepository commentRepository, CommitRepository commitRepository)
     {
         this.projectRepository = projectRepository;
         this.commentRepository = commentRepository;
@@ -33,24 +33,10 @@ public class ProjectController {
         this.issueRepository = issueRepository;
     }
 
-    @PostMapping("/{user}/{repo}")
-    public Project fetchAllData(@PathVariable String user, @PathVariable String repo)
-    {
-        Project project = projectRepository.fetchGitLab(user,repo);
-        Commit[] commits = commitRepository.fetchGitLab(user,repo);
-        Issue[] issues = issueRepository.fetchGitLab(user,repo);
-        for(Issue i: issues){
-            Comment[] comments = commentRepository.fetchGitLab(user, repo, i.getRefId());
-            i.setComments(comments);
-        }
-        project.setCommits(commits);
-        project.setIssues(issues);
-        projectRepository.postGitMiner(project);
-        return project;
-    }
-
     @GetMapping
-    public List<Project> findAll(@RequestParam(required = false) String id,
+    public List<Issue> findAll(@RequestParam(required = false) String id,
+                                 @RequestParam(required = false) String state,
+                                 @RequestParam(required = false) String refId,
                                  @RequestParam(required = false) String order,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size
@@ -64,19 +50,32 @@ public class ProjectController {
                 paging = PageRequest.of(page, size, Sort.by(order).ascending());
             }
 
-            }
+        }
         else {
             paging = PageRequest.of(page, size);
 
         }
-        Page<Project> pageProjects;
+        Page<Issue> pageIssues;
 
         if(id == null){
-            pageProjects = projectRepository.findAll(paging);
+            pageIssues = issueRepository.findAll(paging);
         } else {
-            pageProjects = projectRepository.findById(id, paging);
+            pageIssues = issueRepository.findById(id, paging);
         }
-        return pageProjects.getContent();
+
+        if(state == null){
+            pageIssues = issueRepository.findAll(paging);
+        } else {
+            pageIssues = issueRepository.findByState(id, paging);
+        }
+
+        if(refId == null){
+            pageIssues = issueRepository.findAll(paging);
+        } else {
+            pageIssues = issueRepository.findByRefId(id, paging);
+        }
+
+        return pageIssues.getContent();
 
 
     }

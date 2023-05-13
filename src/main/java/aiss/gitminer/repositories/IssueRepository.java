@@ -1,11 +1,15 @@
 package aiss.gitminer.repositories;
 import aiss.gitminer.model.Issue;
+import aiss.gitminer.model.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
 @Repository
-public class IssueRepository {
+public interface IssueRepository extends JpaRepository<Issue,Long> {
     public final String API_TOKEN = "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";
     public final String API_URL = "https://api.github.com/repos/";
     public Issue[] fetchGitLab(String user, String repo) {
@@ -18,5 +22,11 @@ public class IssueRepository {
         ResponseEntity<Issue[]> issues = restTemplate.exchange(url, HttpMethod.GET, entity, Issue[].class);
         return issues.getBody();
     }
+
+    Page<Issue> findById(String id, Pageable pageable);
+
+    Page<Issue> findByState(String state, Pageable pageable);
+
+    Page<Issue> findByRefId(String refId, Pageable pageable);
 
 }
