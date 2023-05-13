@@ -1,5 +1,7 @@
 package aiss.gitminer.controllers;
 
+import aiss.gitminer.exception.CommentNotFoundException;
+import aiss.gitminer.exception.IssueNotFoundException;
 import aiss.gitminer.model.Comment;
 import aiss.gitminer.model.Commit;
 import aiss.gitminer.model.Issue;
@@ -14,7 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/issues")
@@ -40,7 +45,23 @@ public class IssueController {
                                  @RequestParam(required = false) String order,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size
-    ) {
+    ) throws IssueNotFoundException {
+
+        Optional<Issue> issue = IssueRepository.findById(id);
+        if(!issue.isPresent()){
+            throw new IssueNotFoundException();
+        }
+
+        Optional<Issue> issue2 = IssueRepository.findByState(state);
+        if(!issue.isPresent()){
+            throw new IssueNotFoundException();
+        }
+
+        Optional<Issue> issue3 = IssueRepository.findByRefId(refId);
+        if(!issue.isPresent()){
+            throw new IssueNotFoundException();
+        }
+
         Pageable paging;
 
         if(order != null){
@@ -78,6 +99,14 @@ public class IssueController {
         return pageIssues.getContent();
 
 
+    }
+    List<Issue> issues = new ArrayList<>();
+    public Comment[] getIssuesComments (String issueId){
+        return issues.stream()
+                .filter(issue -> issue.getId().equals(issueId))
+                .findFirst()
+                .map(Issue::getComments)
+                .orElse(Collections.emptyList());
     }
 
 }
