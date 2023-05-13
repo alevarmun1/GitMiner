@@ -1,5 +1,7 @@
 package aiss.gitminer.controllers;
 
+import aiss.gitminer.exception.IssueNotFoundException;
+import aiss.gitminer.exception.ProjectNotFoundException;
 import aiss.gitminer.model.Comment;
 import aiss.gitminer.model.Commit;
 import aiss.gitminer.model.Issue;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -54,7 +57,13 @@ public class ProjectController {
                                  @RequestParam(required = false) String order,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size
-    ) {
+    ) throws ProjectNotFoundException {
+
+        Optional<Project> project = ProjectRepository.findById(id);
+        if(!project.isPresent()){
+            throw new ProjectNotFoundException();
+        }
+
         Pageable paging;
 
         if(order != null){

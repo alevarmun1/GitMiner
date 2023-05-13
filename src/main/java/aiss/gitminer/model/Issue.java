@@ -78,4 +78,12 @@ public class Issue {
     public Integer getRefId() {
         return refId;
     }
+
+    public Comment[] getComments() {
+        return comments;
+    }
+
+    public String getId() {
+        return id;
+    }
 }
